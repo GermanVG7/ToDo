@@ -1,15 +1,38 @@
 import { useState } from "react";
 
 export default function Register({ onBack }) {
-  const [user, setUser] = useState("");
-  const [email, setEmail] = useState("");
-  const [pass, setPass] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [correo, setCorreo] = useState("");
+  const [contrasena, setContrasena] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Aquí iría la lógica real de registro
-    alert("¡Registro exitoso! (simulado)");
-    onBack();
+    setError("");
+    setSuccess("");
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, correo, contrasena }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSuccess("¡Usuario registrado correctamente!");
+        setNombre("");
+        setCorreo("");
+        setContrasena("");
+        setTimeout(() => {
+          setSuccess("");
+          onBack();
+        }, 2000); // vuelve al login tras 2 segundos
+      } else {
+        setError(data.error || "Error al registrar");
+      }
+    } catch (err) {
+      setError("Error de conexión");
+    }
   };
 
   return (
@@ -25,26 +48,26 @@ export default function Register({ onBack }) {
           <form onSubmit={handleSubmit} className="space-y-6 w-full">
             <input
               type="text"
-              placeholder="Usuario"
+              placeholder="Nombre"
               className="w-full px-5 py-3 rounded-xl border border-cyan-300 bg-white/20 text-white placeholder-cyan-200 focus:ring-4 focus:ring-cyan-400 outline-none shadow-inner"
-              value={user}
-              onChange={e => setUser(e.target.value)}
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
               required
             />
             <input
               type="email"
               placeholder="Correo electrónico"
               className="w-full px-5 py-3 rounded-xl border border-cyan-300 bg-white/20 text-white placeholder-cyan-200 focus:ring-4 focus:ring-cyan-400 outline-none shadow-inner"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
               required
             />
             <input
               type="password"
               placeholder="Contraseña"
               className="w-full px-5 py-3 rounded-xl border border-cyan-300 bg-white/20 text-white placeholder-cyan-200 focus:ring-4 focus:ring-cyan-400 outline-none shadow-inner"
-              value={pass}
-              onChange={e => setPass(e.target.value)}
+              value={contrasena}
+              onChange={(e) => setContrasena(e.target.value)}
               required
             />
             <button
@@ -54,6 +77,16 @@ export default function Register({ onBack }) {
               Registrarse
             </button>
           </form>
+          {success && (
+            <div className="mt-4 text-green-400 font-bold text-center">
+              {success}
+            </div>
+          )}
+          {error && (
+            <div className="mt-4 text-red-400 font-bold text-center">
+              {error}
+            </div>
+          )}
           <div className="mt-6 text-center">
             <button
               type="button"

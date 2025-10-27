@@ -1,13 +1,27 @@
 import { useState } from "react";
 
 export default function Login({ onLogin, onRegister }) {
-  const [user, setUser] = useState("");
-  const [pass, setPass] = useState("");
+  const [correo, setCorreo] = useState("");
+  const [contrasena, setContrasena] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (user && pass) {
-      onLogin(user);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ correo, contrasena }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        onLogin(data); // data contiene el usuario logueado
+      } else {
+        setError(data.error || "Credenciales incorrectas");
+      }
+    } catch (err) {
+      setError("Error de conexión");
     }
   };
 
@@ -25,19 +39,19 @@ export default function Login({ onLogin, onRegister }) {
           </h2>
           <form onSubmit={handleSubmit} className="space-y-6 w-full">
             <input
-              type="text"
-              placeholder="Usuario"
+              type="email"
+              placeholder="Correo electrónico"
               className="w-full px-5 py-3 rounded-xl border border-cyan-300 bg-white/20 text-white placeholder-cyan-200 focus:ring-4 focus:ring-cyan-400 outline-none shadow-inner"
-              value={user}
-              onChange={e => setUser(e.target.value)}
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
               required
             />
             <input
               type="password"
               placeholder="Contraseña"
               className="w-full px-5 py-3 rounded-xl border border-cyan-300 bg-white/20 text-white placeholder-cyan-200 focus:ring-4 focus:ring-cyan-400 outline-none shadow-inner"
-              value={pass}
-              onChange={e => setPass(e.target.value)}
+              value={contrasena}
+              onChange={(e) => setContrasena(e.target.value)}
               required
             />
             <button
@@ -47,6 +61,9 @@ export default function Login({ onLogin, onRegister }) {
               Entrar
             </button>
           </form>
+          {error && (
+            <div className="mt-4 text-red-400 font-bold text-center">{error}</div>
+          )}
           {/* Opción para registrarse */}
           <div className="mt-6 text-center">
             <span className="text-cyan-200">¿No tienes una cuenta?</span>

@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import auth from './auth.js'; // <-- extensión .js
 
 const app = express();
 app.use(cors());
@@ -32,6 +33,8 @@ app.delete("/api/todos/:id", (req, res) => {
   todos = todos.filter(t => t.id !== id);
   res.status(204).end();
 });
+
+app.use('/api/auth', auth);
 
 // Servir frontend en producción
 if (process.env.NODE_ENV === "production") {
